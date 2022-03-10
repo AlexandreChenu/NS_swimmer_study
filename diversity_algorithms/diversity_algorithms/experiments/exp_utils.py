@@ -4,7 +4,7 @@ from diversity_algorithms.algorithms.utils import *
 from diversity_algorithms.environments import EvaluationFunctor, registered_environments
 from diversity_algorithms.controllers import SimpleNeuralController
 from diversity_algorithms.analysis import build_grid
-from diversity_algorithms.algorithms.stats import * 
+from diversity_algorithms.algorithms.stats import *
 
 #__all__={"RunParam", "analyse_params", "get_simple_params_dict"}
 
@@ -89,7 +89,7 @@ def analyze_params(params, argv):
         params[k].set_value(arg)
 
 
-def create_functor(params, controller_params):
+def create_functor(params, controller_params, env_params = None):
     rp=RunParam("",0,"")
     if (type(rp) == type(params["env_name"])):
         env_name=params["env_name"].get_value()
@@ -105,7 +105,11 @@ def create_functor(params, controller_params):
     evaluator_class = environment["eval"]
     evaluator_params = environment["eval_params"]
 
+    evaluator_params.update(env_params)
     evaluator_params.update(controller_params)
+
+
+
     if "bd_func" in environment:
         evaluator_params["bd_function"] = environment["bd_func"]
     eval_func = evaluator_class(**evaluator_params)
@@ -117,7 +121,7 @@ def preparing_run(eval_gym, params, with_scoop, deap=True):
         from scoop import futures
 
     # Dumping how the run has been launched
-    if ("run_dir_name" in params.keys()) and (params["run_dir_name"].get_value()!=""):      
+    if ("run_dir_name" in params.keys()) and (params["run_dir_name"].get_value()!=""):
         print("Run dir name: "+params["run_dir_name"].get_value())
         run_name=generate_exp_name(params["run_dir_name"].get_value()+"/"+params["env_name"].get_value()+"_"+params["variant"].get_value())
     else:
@@ -132,7 +136,7 @@ def preparing_run(eval_gym, params, with_scoop, deap=True):
         min_bd=environment["grid_features"]["min_x"]
         max_bd=environment["grid_features"]["max_x"]
         nb_bin_bd=environment["grid_features"]["nb_bin"]
-        
+
         grid=build_grid(min_bd, max_bd, nb_bin_bd)
         grid_offspring=build_grid(min_bd, max_bd, nb_bin_bd)
         stats=None
@@ -148,14 +152,14 @@ def preparing_run(eval_gym, params, with_scoop, deap=True):
         nb_bin_bd=None
         evolvability_nb_samples=0
         nbs=0
-        
+
     sparams["ind_size"]=eval_gym.controller.n_weights
-	
+
     sparams["evolvability_nb_samples"]=evolvability_nb_samples
     sparams["min_bd"]=min_bd # not used by NS. It is just to keep track of it in the saved param file
     sparams["max_bd"]=max_bd # not used by NS. It is just to keep track of it in the saved param file
     sparams["nb_bin"]=nb_bin_bd # not used by NS. It is just to keep track of it in the saved param file
-    
+
     if "extra_evolvability_gens" in sparams:
         extragens = list(map(lambda g:int(g), filter(lambda s:s!="", sparams["extra_evolvability_gens"].split(","))))
         sparams["extra_evolvability_gens"] = extragens
@@ -181,7 +185,7 @@ def preparing_run(eval_gym, params, with_scoop, deap=True):
             stats=get_stat_fit_nov_cov(grid,prefix="population_",indiv=False,min_x=min_bd,max_x=max_bd,nb_bin=nb_bin_bd, gen_window_global=window_population)
             if (window_offspring is not None):
                 stats_offspring=get_stat_fit_nov_cov(grid_offspring,prefix="offspring_", indiv=False,min_x=min_bd,max_x=max_bd,nb_bin=nb_bin_bd, gen_window_global=window_offspring)
-            
+
         sparams["stats"] = stats # Statistics
         sparams["window_population"]=window_population
         if (window_offspring is not None):
@@ -192,7 +196,7 @@ def preparing_run(eval_gym, params, with_scoop, deap=True):
             sparams["window_offspring"]= None
 
     sparams["run_name"]=run_name
-    
+
     print("Launching a run with the following parameter values:")
     for k in sparams.keys():
         print("\t"+k+": "+str(sparams[k]))
@@ -205,7 +209,7 @@ def preparing_run(eval_gym, params, with_scoop, deap=True):
         pool=futures
     else:
         pool=None
-        
+
     dump_params(sparams,run_name)
 
     return sparams, pool
@@ -218,7 +222,7 @@ def terminating_run(sparams, pop, archive, logbook, nb_eval):
         dump_logbook(logbook,sparams["nb_gen"],sparams["run_name"])
     if (archive is not None):
         dump_data(archive.get_content_as_list(),sparams["nb_gen"],sparams, prefix="final_archive", attrs=["bd"], force=True)
-    
+
     dump_end_of_exp(sparams["run_name"], nb_eval)
-    
+
     print("The population, log, archives, etc have been dumped in: "+sparams["run_name"])

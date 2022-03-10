@@ -169,9 +169,9 @@ def novelty_ea(evaluate, params, pool=None):
     for ind in population:
         ind.am_parent=0
 
-    visu_landscape_bool = False
-    #if visu_landscape_bool:
-        #visu_landscape(population[0], 0, toolbox, params)
+    visu_landscape_bool = True
+    if visu_landscape_bool:
+        visu_landscape(population[0], 0, toolbox, params)
 
     total_individuals = copy.deepcopy(population)
 
@@ -329,8 +329,8 @@ def novelty_ea(evaluate, params, pool=None):
         else:
             terminates=False
 
-        #if((gen%10==0) or (gen==1) )and visu_landscape_bool:
-            #visu_landscape(population[0], gen, toolbox, params)
+        if((gen%10==0) or (gen==1)) and visu_landscape_bool:
+            visu_landscape(population[0], gen, toolbox, params)
             # visu_landscape_novelty(population[0], population, archive, gen, toolbox, params)
 
         if(gen%100==0):

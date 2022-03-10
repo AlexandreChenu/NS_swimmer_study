@@ -87,8 +87,13 @@ nnparams={"n_hidden_layers": 2, "n_neurons_per_hidden": params["n_hidden"].get_v
 # Create a dict with all the properties of the controller
 controller_params = {"controller_type":SimpleNeuralController,"controller_params":nnparams}
 
+# Create a dict with all the params of the env
+env_params = {"gym_env_name":"SwimmerDet-v3",
+"gym_params":{},
+"output":"final_reward", "max_step":params["episode_length"].get_value()}
+
 # Get environment
-eval_func = create_functor(params, controller_params)
+eval_func = create_functor(params, controller_params, env_params)
 
 nbobj=params["variant"].get_value().count("+")+1
 creator.create("FitnessMax", base.Fitness, weights=(1.0,)*nbobj)
